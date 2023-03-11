@@ -10,6 +10,7 @@ import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 //import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.*;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -22,12 +23,18 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * project.
  */
 public class Robot extends TimedRobot {
-
-  private Joystick joy1 = new Joystick(0);
-
   final NeutralMode kBreakNeutral = NeutralMode.Coast;
 
+  private Joystick joy1 = new Joystick(0);
   TalonFX mTalon = new TalonFX(5, "rio");
+
+  PIDController pid = new PIDController(0.1, 0, 0);
+  //in raw sensor units
+  double setpoint1 = 0;
+  double setpoint2 = 0;
+  double setpoint3 = 0;
+  double speed = 0;
+
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -55,8 +62,17 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
+    //joystick
     mTalon.set(TalonFXControlMode.PercentOutput, 0.6 * joy1.getRawAxis(1));
+
+    //pid
    SmartDashboard.putNumber("encoder", mTalon.getSelectedSensorPosition(0));
+
+   if(joy1.getRawButtonPressed(0)){
+    speed = pid.calculate(setpoint1);
+   }
+
+   mTalon.set(TalonFXControlMode.PercentOutput, speed);
   }
 
   @Override
